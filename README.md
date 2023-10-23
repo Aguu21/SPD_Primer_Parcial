@@ -255,6 +255,90 @@ void loop()
 ## Link del proyecto:
 - [proyecto](https://www.tinkercad.com/things/2WvM1FAQUE9)
 
+## Cuarta instancia del parcial:
+![alt text](https://github.com/Aguu21/SPD_Primer_Parcial/blob/main/imagenes/esquema_cuarta_parte.png?raw=true)
+
+## Descripción:
+Según el último número del DNI agregar una funcionalidad.
+Dado el número 4 (DNI:45753164), el motor, en mi caso los motores, solo funcionan si el switch se encuentra del lado de los primos.
+Dado mi proyecto, parte de la funcionalidad ya estaba integrada debido a que ambos motores tienen comportamientos diferentes
+segun el estado del switch, entre otras cosas.
+
+## Funciones principales:
+En el loop fue donde se hacen las modificaciones. Lo único que debí hacer fue comentar aquellas funcionalidades que encienden los motores
+y agregar que los motores se encuentren apagados al entrar al lado del switch que no es el contador de primos.
+~~~ C++
+void loop()
+{
+  int lecturaSensorLuz = (map(analogRead(SENSOR_LUZ),\
+                              49, 1023, 0, 100));
+  //El sensor de luz funciona como ahorro de energía, asume
+  //que si la luz es menor al 50% implica que la zona donde
+  //se usa este aparato, una oficina, no cuenta con gente
+  //por lo que no hay necesidad de que el aparato funcione.
+  if (lecturaSensorLuz >= 50){
+    int apretado = boton_apretado();
+    int lecturaSensorTemp = map(analogRead(SENSOR_TEMP),\
+                            20, 358 ,-40 ,125);
+	
+    //Integrar el motor cc consta de agregar un high o low segun
+    //corresponda basandose en el switch.
+    if(digitalRead(SWITCH)){
+      //Si la temperatura es extrema se alerta con 
+      //el motor encendido y debe estar en modo uno a uno.
+      //if(lecturaSensorTemp > 40){
+      //  analogWrite(MOTORAF, 500);
+      //}
+      //else{
+      //  analogWrite(MOTORAF, 0);
+      //}
+      //analogWrite(MOTORCC, map(contador, 0, 500, 0, 255));
+	    analogWrite(MOTORAF, 0);
+      analogWrite(MOTORCC, 0);
+      //Logica contador sin numeros primos
+      if (apretado == AUMENTAR){
+        contador ++;
+        if (contador > 99){
+          contador = 0;	
+        }
+      }
+      else if (apretado == DISMINUIR){
+        contador --;
+        if (contador < 0){
+          contador = 99;
+        }
+      }
+    }
+    else{
+      //Si la temperatura es extrema negativa se alerta con 
+      //el motor encendido y debe estar en modo primo a primo.
+      if(lecturaSensorTemp < 0){
+        analogWrite(MOTORAF, 500);
+      }
+      else{
+        analogWrite(MOTORAF, 0);
+      }
+      analogWrite(MOTORCC, map(contador, 0, 500, 0, 255));
+      //Logica contador con numeros primos
+      if (apretado == AUMENTAR){
+        contador = determinar_primo(contador, 1);
+      }
+      else if (apretado == DISMINUIR){
+        contador = determinar_primo(contador, -1);
+      }
+    }
+    mostrar_display((contador / 10) % 10 , contador % 10);
+  }
+  else{
+  	modo_ahorro();
+  }
+}
+~~~
+
+## Link del proyecto:
+- [proyecto](https://www.tinkercad.com/things/33B3aTnYpm4)
+
+
 ## Fuentes:
 - [Video de SPD](https://www.youtube.com/watch?v=_Ry7mtURGDE)
 - [Classroom](https://classroom.google.com/c/NjE5MTEyNTA3ODE2)
