@@ -77,11 +77,13 @@ void select_num(int numero, int display){
 
 
 ## Segunda instancia del parcial:
-![alt text](https://github.com/Aguu21/SPD_Primer_Parcial/blob/main/imagenes/esquema_primera_parte.png?raw=true)
+![alt text](https://github.com/Aguu21/SPD_Primer_Parcial/blob/main/imagenes/esquema_segunda_parte.png?raw=true)
 
 ## Descripción:
 La segunda parte consta de un switch que determina si el contador se mueve entre números primos o no.
 Se debe integrar un motor que mejore el proyecto. Se debe agregar otro componente, un sensor entre tres opciones.
+Elegí que las revoluciones del motor CC se conecten con el contador dandole otro uso extra al contador, además de que el sensor de temperatura
+encienda un motor en temperaturas extremas segun el modo del switch, pudiendo alertar al usuario de esto.
 
 ## Funciones prinicipales:
 Se determina si el número del contador es o no primo, de no serlo se suma o disminuye hasta que lo sea.
@@ -114,7 +116,7 @@ int determinar_primo(int contador, int modo){
 }
 ~~~
 En el loop se agrega el cambio del switch y se implementa el uso del motor y del sensor de temperatura.
-El motor CC tiene revoluciones proporcionales al contador y el motor AF se enciende en calor o frio extremo segun el modo del contador.
+El motor CC tiene revoluciones proporcionales al contador y el motor AF se enciende en calor o frío extremo según el modo del contador.
 ~~~ C++
 void loop()
 {
@@ -164,3 +166,98 @@ void loop()
 
 ## Link del proyecto:
 - [proyecto](https://www.tinkercad.com/things/0psbEUwSERk)
+
+## Tercera instancia del parcial:
+![alt text](https://github.com/Aguu21/SPD_Primer_Parcial/blob/main/imagenes/esquema_tercera_parte.png?raw=true)
+
+## Descripción:
+Según el último número del DNI agregar un componente y darle una funcionalidad.
+Dado el número 4 (DNI:45753164), integré un fotodiodo, un sensor de luz. Este determina si poner el sistema en modo ahorro o no.
+De no superar el 50% de luz ambiental, el sistema se pone en modo ahorro, apagando los motores y displays.
+
+## Funciones principales:
+Esta función pone el sistema en modo ahorro.
+~~~ C++
+void modo_ahorro(){
+  digitalWrite(A5, HIGH);
+  digitalWrite(A4, HIGH);
+  analogWrite(MOTORAF, 0);
+  analogWrite(MOTORCC, 0);
+}
+~~~
+Al loop se le agrega el if que actua segun la luz ambiental.
+~~~ C++
+void loop()
+{
+  int lecturaSensorLuz = (map(analogRead(SENSOR_LUZ),\
+                              49, 1023, 0, 100));
+  //El sensor de luz funciona como ahorro de energía, asume
+  //que si la luz es menor al 50% implica que la zona donde
+  //se usa este aparato, una oficina, no cuenta con gente
+  //por lo que no hay necesidad de que el aparato funcione.
+  if (lecturaSensorLuz >= 50){
+    int apretado = boton_apretado();
+    int lecturaSensorTemp = map(analogRead(SENSOR_TEMP),\
+                            20, 358 ,-40 ,125);
+
+    //Integrar el motor cc consta de agregar un high o low segun
+    //corresponda basandose en el switch.
+    if(digitalRead(SWITCH)){
+      //Si la temperatura es extrema se alerta con 
+      //el motor encendido y debe estar en modo uno a uno.
+      if(lecturaSensorTemp > 40){
+        analogWrite(MOTORAF, 500);
+      }
+      else{
+        analogWrite(MOTORAF, 0);
+      }
+      analogWrite(MOTORCC, map(contador, 0, 500, 0, 255));
+      //Logica contador sin numeros primos
+      if (apretado == AUMENTAR){
+        contador ++;
+        if (contador > 99){
+          contador = 0;	
+        }
+      }
+      else if (apretado == DISMINUIR){
+        contador --;
+        if (contador < 0){
+          contador = 99;
+        }
+      }
+    }
+    else{
+      //Si la temperatura es extrema negativa se alerta con 
+      //el motor encendido y debe estar en modo primo a primo.
+      if(lecturaSensorTemp < 0){
+        analogWrite(MOTORAF, 500);
+      }
+      else{
+        analogWrite(MOTORAF, 0);
+      }
+      analogWrite(MOTORCC, map(contador, 0, 500, 0, 255));
+      //Logica contador con numeros primos
+      if (apretado == AUMENTAR){
+        contador = determinar_primo(contador, 1);
+      }
+      else if (apretado == DISMINUIR){
+        contador = determinar_primo(contador, -1);
+      }
+    }
+    mostrar_display((contador / 10) % 10 , contador % 10);
+  }
+  else{
+  	modo_ahorro();
+  }
+}
+~~~
+
+## Link del proyecto:
+- [proyecto](https://www.tinkercad.com/things/2WvM1FAQUE9)
+
+## Fuentes:
+- [Video de SPD](https://www.youtube.com/watch?v=_Ry7mtURGDE)
+- [Classroom](https://classroom.google.com/c/NjE5MTEyNTA3ODE2)
+- ["Motor CC y AF"](https://www.youtube.com/watch?v=fJKPeiwi0Pc)
+- [Fotodiodo](https://es.wikipedia.org/wiki/Fotodiodo)
+- ["Fotodiodo Tinkercad"](https://www.youtube.com/watch?v=r9B_tdsA1t8&t=746s)
